@@ -1,0 +1,26 @@
+[Unit]
+Description=Mihomo personal proxy panel
+Requires=mihomo-panel-manager.service
+After=mihomo-panel-manager.service network-online.target
+[Service]
+Type=simple
+User=mihomo-panel
+Group=mihomo-panel
+WorkingDirectory=/opt/mihomo-panel
+EnvironmentFile=/etc/mihomo-panel/web.env
+ExecStart=/opt/mihomo-panel/venv/bin/python /opt/mihomo-panel/serve.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/mihomo-panel
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+MemoryMax=350M
+TasksMax=80
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>Mihomo · 代理管理</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/style.css?v=1.0.4-login-info">
+  <script src="/static/app.js?v=1.0.4-login-info" defer></script>
+</head>
+<body>
+<main id="login-view" class="login-shell">
+  <form id="login-form" class="login-card">
+    <span class="brand-mark" data-icon="logo"></span><h1>欢迎回来</h1><p class="muted">登录 Mihomo，管理你的代理服务。</p>
+    <input id="login-user" type="hidden" value="admin" autocomplete="username">
+    <label class="sr-only" for="login-password">登录密码</label><input id="login-password" type="password" autocomplete="current-password" placeholder="登录密码" required autofocus>
+    <p id="login-error" class="error" role="alert"></p><button class="primary full" type="submit">登录<span data-icon="arrow-right"></span></button>
+    <div class="login-footer">Mihomo <span>·</span> 个人代理管理</div>
+  </form>
+</main>
+<div id="dashboard" class="app-layout" hidden>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="Mihomo 首页"><span class="brand-mark" data-icon="logo"></span>Mihomo</a>
+      <span class="workspace-label">个人空间</span>
+      <nav aria-label="主导航"><button data-tab="services" class="active"><span data-icon="server"></span>服务</button><button data-tab="nodes"><span data-icon="globe"></span>节点</button><button data-tab="subscriptions"><span data-icon="layers"></span>订阅</button></nav>
+      <details class="more-menu settings-menu"><summary aria-label="设置" title="账号与设置"><span class="avatar">M</span><span class="account-name">管理员</span><span data-icon="chevron-down"></span></summary><div class="more-menu-panel"><div class="menu-label">个人账号</div><button data-tab="activity"><span data-icon="history"></span>操作记录</button><button data-action="password"><span data-icon="lock"></span>修改登录密码</button><div class="menu-separator"></div><button data-action="logout"><span data-icon="logout"></span>退出登录</button></div></details>
+    </div>
+  </header>
+  <main class="content">
+    <div class="page-heading"><div><h1 id="page-title">代理服务</h1><p id="page-description" class="page-description">管理连接入口，随时切换出口节点。</p></div><div class="actions"><button data-action="reload" class="icon-button outline" aria-label="刷新" title="刷新"><span data-icon="refresh"></span></button><button id="main-action" class="primary" data-action="create-service"><span data-icon="plus"></span>新建服务</button></div></div>
+    <section id="services-view" aria-labelledby="page-title">
+      <div class="service-toolbar"><div class="segmented-control" role="group" aria-label="筛选服务状态"><button data-service-filter="all" class="active" aria-pressed="true">全部<span id="service-total" class="filter-count">0</span></button><button data-service-filter="running" aria-pressed="false">运行中<span id="service-running" class="filter-count">0</span></button><button data-service-filter="stopped" aria-pressed="false">已停止<span id="service-stopped" class="filter-count">0</span></button></div><div class="input-with-icon service-search"><span data-icon="search"></span><input id="service-search" type="search" placeholder="搜索服务、端口或节点…" aria-label="搜索服务"></div></div>
+      <div id="service-list" class="service-grid"></div>
+      <p id="service-result-count" class="list-caption" aria-live="polite"></p>
+    </section>
+    <section id="nodes-view" hidden>
+      <div class="filters"><select id="filter-sub" aria-label="所属订阅"></select><select id="filter-country" aria-label="地区"></select><select id="filter-tag" aria-label="标签"></select><div class="input-with-icon"><span data-icon="search"></span><input id="filter-search" placeholder="模糊搜索节点、地区…" aria-label="搜索节点"></div><select id="filter-available" aria-label="节点状态"><option value="active">当前节点</option><option value="all">包括已移除</option></select></div>
+      <div class="panel table-panel"><div class="table-heading"><strong>节点</strong><span id="nodes-count" class="muted"></span></div><div class="table-scroll"><table><thead><tr><th>名称</th><th>订阅</th><th>地区 / 标签</th><th>操作</th></tr></thead><tbody id="node-rows"></tbody></table></div></div>
+    </section>
+    <section id="subscriptions-view" hidden><div id="subscription-list" class="subscription-grid"></div></section>
+    <section id="activity-view" hidden><div class="panel table-panel"><div class="table-scroll"><table class="activity-table"><thead><tr><th>时间</th><th>操作</th><th>详情</th></tr></thead><tbody id="activity-rows"></tbody></table></div></div></section>
+  </main>
+</div>
+
+<dialog id="service-dialog" class="wide-dialog"><form id="service-form">
+  <div class="dialog-header"><div><h2 id="service-title">新建服务</h2><p class="dialog-description">设置入口，选择一个出口节点。</p></div><button type="button" data-close="service-dialog" class="close-button" aria-label="关闭"><span data-icon="x"></span></button></div>
+  <input id="service-id" type="hidden"><div class="form-grid"><label>名称<input id="service-name" required maxlength="80" placeholder="给服务起个名字"></label><label>端口<input id="service-port" type="number" min="1024" max="65535" required></label></div>
+  <div class="section-heading"><h3>出口节点</h3><span id="selected-node-label" class="muted small-text"></span></div>
+  <div class="node-filters"><select id="pick-sub" aria-label="筛选订阅"></select><select id="pick-country" aria-label="筛选地区"></select><select id="pick-tag" aria-label="筛选标签"></select><div class="input-with-icon picker-search"><span data-icon="search"></span><input id="pick-search" placeholder="模糊搜索节点、地区…" aria-label="搜索节点名称"></div></div>
+  <select id="service-node" size="5" required aria-label="出口节点"></select><div class="selection-footer"><span id="pick-count" class="muted"></span><button type="button" class="text-button" data-action="test-selected-node" disabled>测试节点<span data-icon="arrow"></span></button></div>
+  <details id="service-advanced" class="advanced"><summary>账号与启动设置</summary><div class="advanced-content"><div class="section-heading"><span class="muted small-text">新服务自动生成账号</span><button type="button" data-action="generate-credentials" class="text-button"><span data-icon="refresh"></span>重新生成</button></div><div class="form-grid"><label>用户名<input id="service-user" maxlength="64" autocomplete="off" required></label><label>密码<div class="input-action"><input id="service-password" type="password" autocomplete="new-password"><button type="button" data-action="toggle-secret">显示</button></div></label></div><label class="checkbox"><input id="service-enabled" type="checkbox" checked>启用服务并开机启动</label></div></details>
+  <p id="service-error" class="error" role="alert"></p><div class="dialog-footer"><button type="button" data-close="service-dialog">取消</button><button type="submit" class="primary">保存</button></div>
+</form></dialog>
+
+<dialog id="subscription-dialog"><form id="subscription-form"><div class="dialog-header"><div class="dialog-heading-group"><span class="dialog-icon" data-icon="layers"></span><h2 id="subscription-title">添加订阅</h2></div><button type="button" data-close="subscription-dialog" class="close-button" aria-label="关闭"><span data-icon="x"></span></button></div><input id="subscription-id" type="hidden">
+  <label>订阅名称<input id="subscription-name" required maxlength="80" placeholder="例如：主用订阅"></label><label>订阅链接<input id="subscription-url" type="url" autocomplete="off" placeholder="https://…"></label><p class="muted small-text">编辑时留空，保留原链接。</p>
+  <details class="advanced"><summary>自动更新设置</summary><div class="advanced-content"><label>更新间隔（小时）<input id="subscription-interval" type="number" min="1" max="168" value="24" required></label><label class="checkbox"><input id="subscription-enabled" type="checkbox" checked>自动更新</label></div></details><p id="subscription-error" class="error" role="alert"></p><div class="dialog-footer"><button type="button" data-close="subscription-dialog">取消</button><button type="submit" class="primary">保存订阅</button></div>
+</form></dialog>
+
+<dialog id="node-dialog"><form id="node-form"><div class="dialog-header"><div class="dialog-heading-group"><span class="dialog-icon" data-icon="tag"></span><h2>节点分类</h2></div><button type="button" data-close="node-dialog" class="close-button" aria-label="关闭"><span data-icon="x"></span></button></div><input id="node-id" type="hidden"><p id="node-name" class="node-dialog-name"></p><label>地区<input id="node-country" required maxlength="40"></label><label>自定义标签<input id="node-tags" placeholder="常用, 备用"></label><p class="muted small-text">多个标签用逗号分隔。</p><p id="node-error" class="error" role="alert"></p><div class="dialog-footer"><button type="button" data-close="node-dialog">取消</button><button class="primary" type="submit">保存分类</button></div></form></dialog>
+
+<dialog id="service-login-dialog" aria-labelledby="service-login-title" aria-describedby="service-login-description">
+  <div class="dialog-header"><div><div class="dialog-heading-group"><span class="dialog-icon" data-icon="user"></span><h2 id="service-login-title">登录信息</h2></div><p id="service-login-description" class="dialog-description"></p></div><button type="button" data-close="service-login-dialog" class="close-button" aria-label="关闭"><span data-icon="x"></span></button></div>
+  <div class="credentials-field"><label for="service-login-user">用户名</label><div class="credential-value"><input id="service-login-user" class="mono" type="text" readonly autocomplete="off" spellcheck="false"><button type="button" data-action="copy-login-user" aria-label="复制用户名"><span data-icon="copy"></span>复制</button></div></div>
+  <div class="credentials-field"><label for="service-login-password">密码</label><div class="credential-value"><input id="service-login-password" class="mono" type="text" readonly autocomplete="off" spellcheck="false"><button type="button" data-action="copy-login-password" aria-label="复制密码"><span data-icon="copy"></span>复制</button></div></div>
+  <div class="dialog-footer"><button type="button" data-close="service-login-dialog" class="primary">完成</button></div>
+</dialog>
+
+<dialog id="info-dialog"><div class="dialog-header"><div class="dialog-heading-group"><span class="dialog-icon" data-icon="terminal"></span><h2 id="info-title">详情</h2></div><button type="button" data-close="info-dialog" class="close-button" aria-label="关闭"><span data-icon="x"></span></button></div><p id="info-note" class="muted"></p><pre id="info-content"></pre><div class="dialog-footer"><button data-action="copy-info"><span data-icon="copy"></span>复制内容</button><button data-close="info-dialog" class="primary">完成</button></div></dialog>
+
+<dialog id="password-dialog"><form id="password-form"><div class="dialog-header"><div class="dialog-heading-group"><span class="dialog-icon" data-icon="lock"></span><h2>修改登录密码</h2></div><button type="button" data-close="password-dialog" class="close-button" aria-label="关闭"><span data-icon="x"></span></button></div><label>当前密码<input id="password-current" type="password" autocomplete="current-password" required></label><label>新密码<input id="password-new" type="password" autocomplete="new-password" minlength="16" required></label><p class="muted small-text">至少 16 个字符，保存后需要重新登录。</p><p id="password-error" class="error" role="alert"></p><div class="dialog-footer"><button class="primary" type="submit">保存密码</button></div></form></dialog>
+<dialog id="confirm-dialog" class="confirm-dialog" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-description">
+  <span id="confirm-symbol" class="confirm-symbol"></span>
+  <h2 id="confirm-title">确认操作</h2>
+  <p id="confirm-description"></p>
+  <div class="dialog-footer"><button id="confirm-cancel" type="button" autofocus>取消</button><button id="confirm-accept" type="button" class="primary">确认</button></div>
+</dialog>
+<div id="toast" role="status" hidden></div>
+</body>
+</html>

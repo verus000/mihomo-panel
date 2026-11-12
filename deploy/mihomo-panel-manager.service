@@ -1,0 +1,21 @@
+[Unit]
+Description=Local service manager for Mihomo personal panel
+After=network-online.target nftables.service ufw.service firewalld.service
+[Service]
+Type=simple
+User=root
+Group=mihomo-panel
+RuntimeDirectory=mihomo-panel-manager
+RuntimeDirectoryMode=0750
+WorkingDirectory=/opt/mihomo-panel
+EnvironmentFile=/etc/mihomo-panel/web.env
+ExecStart=/opt/mihomo-panel/venv/bin/python /opt/mihomo-panel/manager.py
+Restart=on-failure
+RestartSec=3
+UMask=0077
+ProtectHome=yes
+PrivateTmp=yes
+MemoryMax=160M
+TasksMax=80
+[Install]
+WantedBy=multi-user.target
